@@ -53,8 +53,8 @@ app = FastAPI(
     title="AI Gateway",
     description="A comprehensive AI-as-a-Service platform with LiteLLM integration",
     version="1.0.0",
-    docs_url="/docs" if settings.ENVIRONMENT != "production" else None,
-    redoc_url="/redoc" if settings.ENVIRONMENT != "production" else None,
+    docs_url="/docs",
+    redoc_url="/redoc",
     lifespan=lifespan
 )
 
