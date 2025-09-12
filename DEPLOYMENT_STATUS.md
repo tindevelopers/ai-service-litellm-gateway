@@ -27,3 +27,15 @@ Additional IAM permissions granted to service account:
 
 This resolves the permission error: 'artifactregistry.repositories.uploadArtifacts denied'
 
+# Repository Creation Permission Added
+
+Additional IAM permission granted to service account:
+- roles/artifactregistry.repoAdmin - Allows automatic repository creation on push
+
+This resolves the error: 'gcr.io repo does not exist. Creating on push requires the artifactregistry.repositories.createOnPush permission'
+
+The service account now has full permissions to:
+- Create repositories automatically when pushing Docker images
+- Write to existing repositories  
+- Manage repository settings
+
