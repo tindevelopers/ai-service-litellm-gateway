@@ -44,8 +44,10 @@ async def close_redis() -> None:
     
     if redis_client:
         await redis_client.close()
+        redis_client = None
     if redis_pool:
         await redis_pool.disconnect()
+        redis_pool = None
     
     logger.info("Redis connections closed")
 
