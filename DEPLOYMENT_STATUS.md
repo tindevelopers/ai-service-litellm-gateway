@@ -49,3 +49,16 @@ Pre-created the Docker repository to resolve the createOnPush permission issue:
 
 This bypasses the need for artifactregistry.repositories.createOnPush permission during deployment.
 
+# Cloud Run IAM Permissions Added
+
+Additional IAM permissions granted to service account for Cloud Run deployment:
+- roles/iam.serviceAccountUser - Allows acting as other service accounts
+- roles/run.developer - Full Cloud Run deployment permissions
+
+This resolves the error: 'Permission iam.serviceaccounts.actAs denied on service account'
+
+The service account now has complete permissions for:
+- Docker image building and pushing to Artifact Registry
+- Cloud Run service deployment and management
+- Acting as the default Compute Engine service account
+
