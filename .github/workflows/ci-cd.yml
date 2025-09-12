@@ -138,6 +138,8 @@ jobs:
           --allow-unauthenticated \
           --set-env-vars="ENVIRONMENT=production" \
           --set-env-vars="SECRET_KEY=${{ secrets.SECRET_KEY }}" \
+          --set-env-vars="DATABASE_URL=postgresql+asyncpg://placeholder:placeholder@localhost:5432/placeholder" \
+          --set-env-vars="REDIS_URL=redis://localhost:6379/0" \
           --set-env-vars="OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" \
           --set-env-vars="ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" \
           --set-env-vars="GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}" \
