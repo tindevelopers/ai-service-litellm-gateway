@@ -10,3 +10,12 @@ All required GitHub secrets have been set up for CI/CD deployment:
 
 ⚠️ **Important**: Replace the placeholder API keys with your actual keys for production deployment.
 
+# Google Cloud APIs Enabled
+
+The following APIs have been enabled for the project:
+- Artifact Registry API (artifactregistry.googleapis.com)
+- Cloud Run API (run.googleapis.com) 
+- Cloud Build API (cloudbuild.googleapis.com)
+
+This resolves the deployment failure where Docker images couldn't be pushed to Google Container Registry.
+
