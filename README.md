@@ -85,7 +85,7 @@ A comprehensive AI-as-a-Service platform that provides intelligent abstraction l
    curl http://localhost:8000/v1/models
    
    # Chat completion
-   curl -X POST "http://localhost:8000/v1/chat/completions" \
+        curl -X POST "http://localhost:8080/v1/chat/completions" \
      -H "Content-Type: application/json" \
      -d '{
        "model": "gpt-3.5-turbo",
@@ -133,7 +133,7 @@ A comprehensive AI-as-a-Service platform that provides intelligent abstraction l
 - `POST /v1/chat/completions` - Create chat completion
 
 ```bash
-curl -X POST "http://localhost:8000/v1/chat/completions" \
+        curl -X POST "http://localhost:8080/v1/chat/completions" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "gpt-3.5-turbo",
@@ -152,7 +152,7 @@ curl -X POST "http://localhost:8000/v1/chat/completions" \
 - `POST /v1/blog/generate` - Generate blog posts
 
 ```bash
-curl -X POST "http://localhost:8000/v1/blog/generate" \
+        curl -X POST "http://localhost:8080/v1/blog/generate" \
   -H "Content-Type: application/json" \
   -d '{
     "topic": "Artificial Intelligence in Healthcare",
@@ -169,7 +169,7 @@ curl -X POST "http://localhost:8000/v1/blog/generate" \
 
 ### Interactive API Documentation
 
-Visit `http://localhost:8000/docs` for interactive Swagger documentation with all endpoints, request/response schemas, and the ability to test API calls directly from your browser.
+Visit `http://localhost:8080/docs` for interactive Swagger documentation with all endpoints, request/response schemas, and the ability to test API calls directly from your browser.
 
 ### Local Development Setup
 
