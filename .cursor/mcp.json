@@ -1,20 +1,16 @@
 {
   "mcpServers": {
-    "google-cloud": {
+    "filesystem": {
       "command": "npx",
-      "args": ["-y", "@google-cloud/mcp-server-gcp"],
-      "env": {
-        "GOOGLE_APPLICATION_CREDENTIALS": ".gcp/service-account-key.json",
-        "GOOGLE_CLOUD_PROJECT": "your-project-id"
-      }
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/Users/foo/Library/CloudStorage/OneDrive-TheInformationNetworkLtd/@ Cursor/SDK's/sdk-ai-model-as-a-service"]
     },
-    "cloud-run": {
+    "memory": {
       "command": "npx",
-      "args": ["-y", "https://github.com/GoogleCloudPlatform/cloud-run-mcp"],
-      "env": {
-        "GOOGLE_APPLICATION_CREDENTIALS": ".gcp/service-account-key.json",
-        "GOOGLE_CLOUD_PROJECT": "your-project-id"
-      }
+      "args": ["-y", "@modelcontextprotocol/server-memory"]
+    },
+    "everything": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-everything"]
     }
   }
 }
