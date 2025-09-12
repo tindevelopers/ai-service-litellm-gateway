@@ -39,3 +39,13 @@ The service account now has full permissions to:
 - Write to existing repositories  
 - Manage repository settings
 
+# Docker Repository Created
+
+Pre-created the Docker repository to resolve the createOnPush permission issue:
+- Repository: ai-gateway
+- Format: docker  
+- Location: us
+- Project: endless-station-471909-a8
+
+This bypasses the need for artifactregistry.repositories.createOnPush permission during deployment.
+
