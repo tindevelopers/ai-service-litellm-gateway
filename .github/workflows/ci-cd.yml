@@ -2,9 +2,9 @@ name: AI Gateway CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, staging, develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, staging ]
 
 env:
   REGISTRY: ghcr.io
@@ -106,11 +106,33 @@ jobs:
   deploy-to-gcp:
     needs: build-and-push
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/develop')
     
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+    
+    - name: Set environment variables
+      run: |
+        if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+          echo "SERVICE_NAME=ai-gateway" >> $GITHUB_ENV
+          echo "ENVIRONMENT=production" >> $GITHUB_ENV
+          echo "MAX_INSTANCES=10" >> $GITHUB_ENV
+          echo "MEMORY=1Gi" >> $GITHUB_ENV
+          echo "CPU=1" >> $GITHUB_ENV
+        elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+          echo "SERVICE_NAME=ai-gateway-staging" >> $GITHUB_ENV
+          echo "ENVIRONMENT=staging" >> $GITHUB_ENV
+          echo "MAX_INSTANCES=5" >> $GITHUB_ENV
+          echo "MEMORY=512Mi" >> $GITHUB_ENV
+          echo "CPU=1" >> $GITHUB_ENV
+        elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+          echo "SERVICE_NAME=ai-gateway-dev" >> $GITHUB_ENV
+          echo "ENVIRONMENT=development" >> $GITHUB_ENV
+          echo "MAX_INSTANCES=2" >> $GITHUB_ENV
+          echo "MEMORY=512Mi" >> $GITHUB_ENV
+          echo "CPU=1" >> $GITHUB_ENV
+        fi
     
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
@@ -131,12 +153,12 @@ jobs:
     
     - name: Deploy to Cloud Run
       run: |
-        gcloud run deploy ai-gateway \
+        gcloud run deploy ${{ env.SERVICE_NAME }} \
           --image us-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/ai-gateway/ai-gateway:${{ github.sha }} \
           --platform managed \
           --region us-central1 \
           --allow-unauthenticated \
-          --set-env-vars="ENVIRONMENT=production" \
+          --set-env-vars="ENVIRONMENT=${{ env.ENVIRONMENT }}" \
           --set-env-vars="SECRET_KEY=${{ secrets.SECRET_KEY }}" \
           --set-env-vars="DATABASE_URL=postgresql+asyncpg://placeholder:placeholder@localhost:5432/placeholder" \
           --set-env-vars="REDIS_URL=redis://localhost:6379/0" \
@@ -144,19 +166,20 @@ jobs:
           --set-env-vars="ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" \
           --set-env-vars="GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}" \
           --set-env-vars="CACHE_ENABLED=false" \
-          --memory=1Gi \
-          --cpu=1 \
-          --max-instances=10 \
+          --memory=${{ env.MEMORY }} \
+          --cpu=${{ env.CPU }} \
+          --max-instances=${{ env.MAX_INSTANCES }} \
           --timeout=300 \
           --project=${{ secrets.GCP_PROJECT_ID }}
     
     - name: Get Cloud Run URL
       run: |
-        SERVICE_URL=$(gcloud run services describe ai-gateway --platform managed --region us-central1 --format 'value(status.url)' --project=${{ secrets.GCP_PROJECT_ID }})
+        SERVICE_URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} --platform managed --region us-central1 --format 'value(status.url)' --project=${{ secrets.GCP_PROJECT_ID }})
         echo "Service deployed at: $SERVICE_URL"
         echo "SERVICE_URL=$SERVICE_URL" >> $GITHUB_ENV
+        echo "🚀 ${{ env.ENVIRONMENT }} environment deployed: $SERVICE_URL"
     
     - name: Test deployment
       run: |
         curl -f $SERVICE_URL/health || exit 1
-        echo "✅ Deployment health check passed!"
+        echo "✅ ${{ env.ENVIRONMENT }} deployment health check passed!"
