@@ -13,6 +13,8 @@ A comprehensive AI-as-a-Service platform that provides intelligent abstraction l
 - **Health Monitoring**: Health and readiness endpoints for deployment
 - **Structured Logging**: Detailed logging with request/response tracking
 - **Prometheus Metrics**: Built-in metrics collection for monitoring
+- **CI/CD Pipeline**: Automated deployment to Google Cloud Run via GitHub Actions
+- **Google Cloud Integration**: Full GCP setup with proper IAM permissions and API enablement
 
 ### 🚧 In Development
 - **Semantic Caching**: 30-70% cost savings through Redis-based caching
