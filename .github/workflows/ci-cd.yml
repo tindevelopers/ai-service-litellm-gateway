@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: AI Gateway CI/CD Pipeline
 
 on:
   push:
@@ -9,32 +9,61 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  PYTHON_VERSION: '3.11'
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12']
     
-    - name: Set up Python
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
-        python-version: '3.11'
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements-simple.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
     
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest pytest-cov
+        pip install -r requirements-simple.txt
+        pip install pytest pytest-cov pytest-asyncio httpx
     
-    - name: Run tests
+    - name: Lint with flake8
       run: |
-        pytest tests/ --cov=src --cov-report=xml
+        pip install flake8
+        # Stop the build if there are Python syntax errors or undefined names
+        flake8 src --count --select=E9,F63,F7,F82 --show-source --statistics
+        # Exit-zero treats all errors as warnings
+        flake8 src --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    
+    - name: Run tests with pytest
+      env:
+        SECRET_KEY: test-secret-key-for-ci
+        DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/test_db
+        REDIS_URL: redis://localhost:6379/1
+        OPENAI_API_KEY: test-key
+        CACHE_ENABLED: false
+      run: |
+        pytest tests/ -v --cov=src --cov-report=xml --cov-report=html
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       with:
         file: ./coverage.xml
+        fail_ci_if_error: false
 
   build-and-push:
     needs: test
@@ -74,12 +103,58 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
 
-  deploy-to-render:
+  deploy-to-gcp:
     needs: build-and-push
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:
-    - name: Deploy to Render
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+    
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+    
+    - name: Configure Docker to use gcloud as a credential helper
       run: |
-        curl -X POST "https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}"
+        gcloud auth configure-docker gcr.io
+    
+    - name: Build and push to GCR
+      run: |
+        docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/ai-gateway:${{ github.sha }} .
+        docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/ai-gateway:${{ github.sha }}
+    
+    - name: Deploy to Cloud Run
+      run: |
+        gcloud run deploy ai-gateway \
+          --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/ai-gateway:${{ github.sha }} \
+          --platform managed \
+          --region us-central1 \
+          --allow-unauthenticated \
+          --set-env-vars="ENVIRONMENT=production" \
+          --set-env-vars="SECRET_KEY=${{ secrets.SECRET_KEY }}" \
+          --set-env-vars="OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" \
+          --set-env-vars="ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" \
+          --set-env-vars="GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}" \
+          --set-env-vars="CACHE_ENABLED=false" \
+          --memory=1Gi \
+          --cpu=1 \
+          --max-instances=10 \
+          --timeout=300 \
+          --project=${{ secrets.GCP_PROJECT_ID }}
+    
+    - name: Get Cloud Run URL
+      run: |
+        SERVICE_URL=$(gcloud run services describe ai-gateway --platform managed --region us-central1 --format 'value(status.url)' --project=${{ secrets.GCP_PROJECT_ID }})
+        echo "Service deployed at: $SERVICE_URL"
+        echo "SERVICE_URL=$SERVICE_URL" >> $GITHUB_ENV
+    
+    - name: Test deployment
+      run: |
+        curl -f $SERVICE_URL/health || exit 1
+        echo "✅ Deployment health check passed!"
