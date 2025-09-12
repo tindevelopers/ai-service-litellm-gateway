@@ -19,3 +19,11 @@ The following APIs have been enabled for the project:
 
 This resolves the deployment failure where Docker images couldn't be pushed to Google Container Registry.
 
+# IAM Permissions Updated
+
+Additional IAM permissions granted to service account:
+- roles/artifactregistry.writer - For pushing Docker images to Artifact Registry
+- roles/storage.objectAdmin - For Google Container Registry access
+
+This resolves the permission error: 'artifactregistry.repositories.uploadArtifacts denied'
+
