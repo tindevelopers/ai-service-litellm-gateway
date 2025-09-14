@@ -79,3 +79,6 @@ service-account-key.json
 *.temp
 *.bak
 *.backup
+
+# Frontend template (not needed for GCP deployment)
+TAILADMIN/

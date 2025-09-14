@@ -66,7 +66,6 @@ class Settings(BaseSettings):
     BUDGET_LIMIT_USD: Optional[float] = Field(default=None, env="BUDGET_LIMIT_USD")
     
     # Specialized services settings
-    BLOG_DEFAULT_MODEL: str = Field(default="gpt-4", env="BLOG_DEFAULT_MODEL")
     SUPPORT_DEFAULT_MODEL: str = Field(default="gpt-3.5-turbo", env="SUPPORT_DEFAULT_MODEL")
     CLASSIFICATION_MODEL: str = Field(default="gpt-3.5-turbo", env="CLASSIFICATION_MODEL")
     

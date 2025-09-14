@@ -274,7 +274,6 @@ class LiteLLMService:
     def get_model_for_task(self, task: str) -> str:
         """Get the optimal model for a specific task"""
         task_models = {
-            "blog": settings.BLOG_DEFAULT_MODEL,
             "support": settings.SUPPORT_DEFAULT_MODEL,
             "classification": settings.CLASSIFICATION_MODEL,
             "general": settings.DEFAULT_MODEL
