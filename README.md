@@ -7,7 +7,7 @@ A comprehensive AI-as-a-Service platform that provides intelligent abstraction l
 ### ✅ Implemented
 - **Multi-Provider LLM Access**: Unified API for 100+ LLM providers via LiteLLM
 - **OpenAI-Compatible API**: Drop-in replacement for OpenAI API
-- **Task-Specific Services**: Specialized endpoints for blog generation and customer support
+- **Task-Specific Services**: Specialized endpoints for customer support
 - **Model Management**: Dynamic model listing based on available API keys
 - **Error Handling**: Comprehensive error handling with meaningful messages
 - **Health Monitoring**: Health and readiness endpoints for deployment
@@ -148,22 +148,6 @@ A comprehensive AI-as-a-Service platform that provides intelligent abstraction l
 
 #### Specialized Services
 
-##### Blog Generation
-- `POST /v1/blog/generate` - Generate blog posts
-
-```bash
-        curl -X POST "http://localhost:8080/v1/blog/generate" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "topic": "Artificial Intelligence in Healthcare",
-    "keywords": ["AI", "healthcare", "machine learning"],
-    "tone": "professional",
-    "length": "medium",
-    "target_audience": "healthcare professionals",
-    "include_outline": true
-  }'
-```
-
 ##### Customer Support
 - `POST /v1/support/respond` - Generate support responses
 
@@ -249,15 +233,7 @@ COHERE_API_KEY=your-cohere-api-key
      }'
    ```
 
-4. **Test Blog Generation**
-   ```bash
-   curl -X POST http://localhost:8000/v1/blog/generate \
-     -H "Content-Type: application/json" \
-     -d '{
-       "topic": "Artificial Intelligence",
-       "tone": "professional"
-     }'
-   ```
+ 
 
 ## 📊 API Endpoints
 
@@ -267,7 +243,6 @@ COHERE_API_KEY=your-cohere-api-key
 - `GET /v1/models` - List available models
 
 ### Specialized Services
-- `POST /v1/blog/generate` - Blog content generation
 - `POST /v1/support/classify` - Customer support ticket classification
 - `POST /v1/support/respond` - Automated support responses
 
@@ -313,7 +288,6 @@ src/
 │           ├── auth.py    # Authentication endpoints
 │           ├── chat.py    # Chat completion endpoints
 │           ├── models.py  # Model listing endpoints
-│           ├── blog.py    # Blog generation service
 │           └── support.py # Customer support service
 ├── services/               # Business logic services
 └── utils/                  # Utility functions
@@ -340,7 +314,6 @@ deploy/                     # Deployment scripts
 - Database models (User, APIKey, Usage)
 - Redis caching infrastructure
 - OpenAI-compatible chat completions endpoint
-- Specialized blog generation service
 - Customer support ticket classification and response
 - Health checks and monitoring endpoints
 - Docker containerization

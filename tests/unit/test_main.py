@@ -79,25 +79,6 @@ def test_chat_completion_endpoint():
     assert "usage" in data
 
 
-def test_blog_generation_endpoint():
-    """Test the blog generation endpoint"""
-    request_data = {
-        "topic": "Artificial Intelligence",
-        "tone": "professional",
-        "length": "medium"
-    }
-    
-    response = client.post("/v1/blog/generate", json=request_data)
-    assert response.status_code == 200
-    data = response.json()
-    assert "id" in data
-    assert "title" in data
-    assert "content" in data
-    assert "Artificial Intelligence" in data["title"]
-    assert data["tone"] == "professional"
-    assert data["word_count"] > 0
-
-
 def test_support_classification_endpoint():
     """Test the support ticket classification endpoint"""
     request_data = {
