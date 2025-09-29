@@ -51,7 +51,7 @@ async def lifespan(app: FastAPI):
 # Create FastAPI application
 app = FastAPI(
     title="AI Gateway",
-    description="A comprehensive AI-as-a-Service platform with LiteLLM integration",
+    description="A comprehensive AI-as-a-Service platform with Petstore Direct LLM integration",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
@@ -204,7 +204,7 @@ app.include_router(api_router, prefix="/v1")
 async def root():
     """Root endpoint"""
     return {
-        "message": "AI Gateway - LiteLLM Service",
+        "message": "AI Gateway - Petstore Direct LLM Service",
         "version": "1.0.0",
         "docs": "/docs",
         "health": "/health"
