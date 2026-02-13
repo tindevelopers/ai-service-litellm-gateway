@@ -1,0 +1,18 @@
+---
+description: Prevent “module exists locally but not in image” (LiteLLM + Python src-layout)
+alwaysApply: true
+---
+
+# LiteLLM + Deployment Verification (Python)
+
+- When adding/renaming provider modules (e.g. `litellm_provider.py`), verify they are **present in the built image**, not just in the repo.
+- Prefer a deterministic “build stamp” in logs (e.g. `deployment_version` / git SHA) so Cloud Run revisions can be identified from runtime logs.
+- For `src/` layouts, ensure imports match the runtime packaging model:
+  - If running from repo root with `PYTHONPATH=/app`, `src.<pkg>` namespace imports may work.
+  - If installed as a package, prefer importing from the package name (e.g. `<pkg>.ai...`) unless `src` is intentionally a namespace package.
+- Add non-secret diagnostics on LiteLLM registration failures:
+  - `importlib.util.find_spec(...)` result
+  - presence of the target file on disk
+  - a short directory listing of the package directory
+- Never log secrets (API keys/tokens). Only log boolean presence.
+

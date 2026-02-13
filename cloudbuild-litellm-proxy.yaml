@@ -1,0 +1,59 @@
+# Cloud Build config for litellm-proxy (europe-west9, project api-ai-blog-writer)
+# Use this when creating a trigger that deploys to the litellm-proxy service.
+#
+# Create trigger:
+#   gcloud builds triggers create github \
+#     --repo-name=ai-service-litellm-gateway \
+#     --repo-owner=YOUR_GITHUB_ORG \
+#     --branch-pattern="^main$" \
+#     --build-config=cloudbuild-litellm-proxy.yaml \
+#     --project=api-ai-blog-writer
+
+substitutions:
+  _REGION: europe-west9
+  _SERVICE: litellm-proxy
+  _ENV: production
+  _AR_REPO: litellm-proxy
+  _CPU: "2"
+  _MEMORY: "2Gi"
+
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'build',
+      '-t', 'europe-west9-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_SERVICE}:$COMMIT_SHA',
+      '-t', 'europe-west9-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_SERVICE}:latest',
+      '.'
+    ]
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'europe-west9-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_SERVICE}:$COMMIT_SHA']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'europe-west9-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_SERVICE}:latest']
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args: [
+      'run', 'deploy', '${_SERVICE}',
+      '--image', 'europe-west9-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_SERVICE}:$COMMIT_SHA',
+      '--region', '${_REGION}',
+      '--platform', 'managed',
+      '--allow-unauthenticated',
+      '--execution-environment', 'gen2',
+      '--concurrency', '100',
+      '--cpu', '${_CPU}',
+      '--memory', '${_MEMORY}',
+      '--set-env-vars', 'ENVIRONMENT=${_ENV},CACHE_ENABLED=false',
+      '--update-secrets', 'SECRET_KEY=SECRET_KEY:latest',
+      '--update-secrets', 'DATABASE_URL=DATABASE_URL:latest',
+      '--update-secrets', 'REDIS_URL=REDIS_URL:latest'
+    ]
+
+images:
+  - 'europe-west9-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_SERVICE}:$COMMIT_SHA'
+  - 'europe-west9-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/${_SERVICE}:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: 'E2_HIGHCPU_8'
