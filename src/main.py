@@ -199,6 +199,10 @@ async def general_exception_handler(request: Request, exc: Exception):
 # Include API routes
 app.include_router(api_router, prefix="/v1")
 
+# OpenAI-compatible path without /v1 prefix (for LiteLLM client with api_base = gateway URL)
+from src.api.v1.endpoints import chat as chat_endpoints
+app.include_router(chat_endpoints.router, prefix="/chat", tags=["chat"])
+
 # Root endpoint
 @app.get("/")
 async def root():
